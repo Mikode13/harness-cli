@@ -1,0 +1,4 @@
+allowBuilds:
+  '@mikode13/code-quality': false
+  '@mikode13/tsconfig': false
+  unrs-resolver: true

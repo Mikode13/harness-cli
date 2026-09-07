@@ -1,0 +1,47 @@
+{
+	"name": "@mikode13/harness-cli",
+	"version": "0.1.0",
+	"description": "Command-line consumer for @mikode13/harness",
+	"private": true,
+	"type": "module",
+	"license": "SEE LICENSE IN LICENSE",
+	"bin": {
+		"harness": "./dist/cli.js"
+	},
+	"engines": {
+		"node": "^22.13.0 || ^24.0.0"
+	},
+	"packageManager": "pnpm@11.17.0",
+	"scripts": {
+		"preinstall": "npx only-allow pnpm",
+		"prepare": "mikode-git-hooks install",
+		"build": "tsc -p tsconfig.build.json",
+		"start": "node dist/cli.js",
+		"format": "prettier . --write",
+		"format:check": "prettier . --check",
+		"lint": "eslint . --max-warnings 0",
+		"lint:fix": "eslint . --fix",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p tests",
+		"test": "vitest run --project unit",
+		"test:unit": "vitest run --project unit",
+		"test:unit:watch": "vitest --project unit",
+		"test:coverage": "vitest run --project unit --coverage",
+		"check": "pnpm run format:check && pnpm run lint && pnpm run typecheck"
+	},
+	"dependencies": {
+		"@mikode13/harness": "0.1.0",
+		"@openai/codex-sdk": "^0.146.0"
+	},
+	"devDependencies": {
+		"@mikode13/code-quality": "0.1.0",
+		"@mikode13/code-style": "0.1.0",
+		"@mikode13/git-hooks": "0.1.0",
+		"@mikode13/tsconfig": "0.1.0",
+		"@types/node": "^26.1.2",
+		"@vitest/coverage-v8": "^4.1.11",
+		"eslint": "^10.8.0",
+		"prettier": "^3.9.6",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.11"
+	}
+}

@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci:
+    name: CI
+    uses: Mikode13/.github/.github/workflows/ci.yml@04cbe17051083ce1d74fe71dbb2bb126885a08d6
+    with:
+      source: true
+      tests: true
+      build: true
+      documentation: true

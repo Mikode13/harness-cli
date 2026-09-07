@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+
+.claude/
+.vscode/
+.idea/
+*.swp
+.DS_Store
