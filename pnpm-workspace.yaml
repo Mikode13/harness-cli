@@ -1,6 +1,2 @@
 allowBuilds:
-  '@mikode13/code-quality': false
-  '@mikode13/tsconfig': false
   unrs-resolver: true
-minimumReleaseAgeExclude:
-  - '@mikode13/harness@0.1.0'
