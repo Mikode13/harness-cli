@@ -29,8 +29,7 @@
 		"check": "pnpm run format:check && pnpm run lint && pnpm run typecheck"
 	},
 	"dependencies": {
-		"@mikode13/harness": "0.1.0",
-		"@openai/codex-sdk": "^0.146.0"
+		"@mikode13/harness": "1.0.0"
 	},
 	"devDependencies": {
 		"@mikode13/code-quality": "1.0.0",

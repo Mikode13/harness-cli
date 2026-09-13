@@ -2,7 +2,8 @@
 	"extends": "@mikode13/tsconfig/node",
 	"compilerOptions": {
 		"noEmit": true,
-		"types": ["node"]
+		"types": ["node"],
+		"rewriteRelativeImportExtensions": true
 	},
 	"include": ["**/*.ts", "**/*.tsx"]
 }
