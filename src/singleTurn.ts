@@ -59,6 +59,10 @@ export async function start(args: readonly string[]) {
 			}
 		});
 
+		// A provider can end a cancelled turn without an error, as Claude does. Report it as the
+		// cancellation it is, not as a run that produced no response.
+		abortController.signal.throwIfAborted();
+
 		if (!response) {
 			throw new Error('The response from the agent is empty');
 		}

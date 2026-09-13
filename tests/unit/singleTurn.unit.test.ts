@@ -185,6 +185,30 @@ describe('single-turn cancellation', () => {
 		},
 	);
 
+	it('reports a cancelled run as cancelled when the agent ends it without an error', async () => {
+		// Claude ends a closed stream quietly instead of rejecting with an AbortError.
+		useAgent(
+			(_prompt, signal) =>
+				new Promise(resolve => {
+					signal.addEventListener('abort', () => {
+						resolve(undefined);
+					});
+				}),
+		);
+		const listenersBefore = new Set(process.listeners('SIGINT'));
+
+		const run = start(['--agent', 'claude', 'review this diff']);
+		process
+			.listeners('SIGINT')
+			.filter(listener => !listenersBefore.has(listener))
+			.forEach(listener => {
+				listener('SIGINT');
+			});
+
+		await expect(run).rejects.toMatchObject({ name: 'AbortError' });
+		expect(stdout).not.toHaveBeenCalled();
+	});
+
 	it('removes its signal listeners once the run settles', async () => {
 		useAgent(() => Promise.resolve(response()));
 		const sigintListeners = process.listenerCount('SIGINT');
