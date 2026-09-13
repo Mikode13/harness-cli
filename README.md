@@ -29,6 +29,10 @@ A CI job can run a pinned major version without a global install:
 npx --yes @mikode13/harness-cli@1 single-turn --agent claude "$prompt"
 ```
 
+pnpm works the same way, with `pnpm dlx` in place of `npx`. Installing globally with
+`pnpm add --global` also needs pnpm's global bin directory on `PATH`, which `pnpm setup`
+configures; without it pnpm fails with `ERR_PNPM_GLOBAL_BIN_DIR_NOT_IN_PATH`.
+
 Type a request at `>`. Press Ctrl+C while an agent is running to cancel that turn and return
 to the prompt. Press Ctrl+C twice within three seconds while idle to exit.
 
@@ -176,6 +180,13 @@ Releases are automatic. After CI passes on `main`, `.github/workflows/release.ym
 MiKode release workflow: semantic-release derives the version from the squash commits since the
 previous release, publishes it to npm with provenance through Trusted Publishing, and creates the
 `v<version>` tag and a GitHub Release. `package.json` stays at `0.0.0-development`.
+
+The Trusted Publisher on npmjs.com is registered for the package `@mikode13/harness-cli`, the
+repository `Mikode13/harness-cli`, the workflow filename `release.yml`, and the environment
+`npm` that the release job declares. Its allowed actions must include `npm publish`, because a
+new configuration allows only `npm stage publish` while semantic-release publishes directly. npm
+validates none of these fields when they are saved, so a mismatch first appears as a `404` from
+the OIDC token exchange in the release job.
 
 A `fix` releases a patch, a `feat` a minor version, and a breaking change a major version. The
 command line, the single-turn stdout fields, and the exit codes are the public contract, so

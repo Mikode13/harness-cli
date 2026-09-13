@@ -9,7 +9,7 @@
 		"url": "git+https://github.com/Mikode13/harness-cli.git"
 	},
 	"bin": {
-		"harness-cli": "./dist/cli.js"
+		"harness-cli": "dist/cli.js"
 	},
 	"files": [
 		"dist"
