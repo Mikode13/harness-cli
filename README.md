@@ -144,8 +144,10 @@ pnpm test
 pnpm run build
 ```
 
-The unit suite uses deterministic fakes and never contacts a provider. Coverage is available
-with `pnpm run test:coverage`.
+`pnpm test` runs the unit suite and the integration suite, and neither contacts a provider. The
+integration suite drives the command line through the real `@mikode13/harness`, replacing only
+the Claude and Codex SDKs, and the terminal for the interactive session, with deterministic
+fakes under `tests/support/fakes/`. Coverage is available with `pnpm run test:coverage`.
 
 ## License
 

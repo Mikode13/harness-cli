@@ -22,10 +22,11 @@
 		"lint": "eslint . --max-warnings 0",
 		"lint:fix": "eslint . --fix",
 		"typecheck": "tsc --noEmit && tsc --noEmit -p tests",
-		"test": "vitest run --project unit",
+		"test": "pnpm run test:unit && pnpm run test:integration",
 		"test:unit": "vitest run --project unit",
 		"test:unit:watch": "vitest --project unit",
-		"test:coverage": "vitest run --project unit --coverage",
+		"test:integration": "vitest run --project integration",
+		"test:coverage": "vitest run --project unit --project integration --coverage",
 		"check": "pnpm run format:check && pnpm run lint && pnpm run typecheck"
 	},
 	"dependencies": {

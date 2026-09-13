@@ -32,6 +32,9 @@ not another implementation of the harness library.
 ## Operational constraints
 
 - The mandatory test suite must remain offline and must not contact provider SDKs.
+- The integration suite runs the real harness: `vitest.config.ts` aliases only the provider
+  SDKs to the fakes in `tests/support/fakes/`, and the interactive tests replace readline. Do
+  not mock harness or project modules there, or the suite stops proving the collaboration.
 - `--auto-approve` enables provider permission bypasses and is safe only when both the
   workspace and the prompt are trusted, never with content an outside contributor controls. The
   default is disabled.
