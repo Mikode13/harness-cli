@@ -23,4 +23,5 @@ jobs:
       source: true
       tests: true
       build: true
+      package: true
       documentation: true

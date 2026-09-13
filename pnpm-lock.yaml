@@ -17,6 +17,9 @@ importers:
       '@mikode13/code-style':
         specifier: 1.0.0
         version: 1.0.0(prettier@3.9.6)
+      '@mikode13/cross-platform':
+        specifier: 1.0.0
+        version: 1.0.0
       '@mikode13/git-hooks':
         specifier: 1.0.0
         version: 1.0.0(@types/node@26.4.1)(typescript@6.0.3)
@@ -631,6 +634,14 @@ packages:
     engines: { node: ^22.13.0 || ^24.0.0 }
     peerDependencies:
       prettier: ^3.5.0
+
+  '@mikode13/cross-platform@1.0.0':
+    resolution:
+      {
+        integrity: sha512-6auHGwuG621vX3xi6ZAsFl3wOh3zbf+OND24bSN7AwqS0kjjrLciQWA4/Tphbv8dGaJ+qZV2NEefeCasZNLo9Q==,
+      }
+    engines: { node: ^22.13.0 || ^24.0.0 }
+    hasBin: true
 
   '@mikode13/git-hooks@1.0.0':
     resolution:
@@ -3848,6 +3859,8 @@ snapshots:
   '@mikode13/code-style@1.0.0(prettier@3.9.6)':
     dependencies:
       prettier: 3.9.6
+
+  '@mikode13/cross-platform@1.0.0': {}
 
   '@mikode13/git-hooks@1.0.0(@types/node@26.4.1)(typescript@6.0.3)':
     dependencies:

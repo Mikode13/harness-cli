@@ -1,21 +1,30 @@
 {
 	"name": "@mikode13/harness-cli",
-	"version": "0.1.0",
+	"version": "0.0.0-development",
 	"description": "Command-line consumer for @mikode13/harness",
-	"private": true,
 	"type": "module",
 	"license": "SEE LICENSE IN LICENSE",
-	"bin": {
-		"harness": "./dist/cli.js"
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Mikode13/harness-cli.git"
 	},
+	"bin": {
+		"harness-cli": "./dist/cli.js"
+	},
+	"files": [
+		"dist"
+	],
 	"engines": {
 		"node": "^22.13.0 || ^24.0.0"
 	},
 	"packageManager": "pnpm@11.17.0",
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
-		"preinstall": "npx only-allow pnpm",
 		"prepare": "mikode-git-hooks install",
-		"build": "tsc -p tsconfig.build.json",
+		"prepack": "pnpm run build",
+		"build": "mikode-scripts clean dist && tsc -p tsconfig.build.json",
 		"start": "node dist/cli.js",
 		"format": "prettier . --write",
 		"format:check": "prettier . --check",
@@ -27,6 +36,7 @@
 		"test:unit:watch": "vitest --project unit",
 		"test:integration": "vitest run --project integration",
 		"test:coverage": "vitest run --project unit --project integration --coverage",
+		"pack:check": "pnpm run build && node scripts/pack-check.mjs",
 		"check": "pnpm run format:check && pnpm run lint && pnpm run typecheck"
 	},
 	"dependencies": {
@@ -35,6 +45,7 @@
 	"devDependencies": {
 		"@mikode13/code-quality": "1.0.0",
 		"@mikode13/code-style": "1.0.0",
+		"@mikode13/cross-platform": "1.0.0",
 		"@mikode13/git-hooks": "1.0.0",
 		"@mikode13/tsconfig": "1.0.0",
 		"@types/node": "^26.1.2",
