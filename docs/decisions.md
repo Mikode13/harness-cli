@@ -87,3 +87,23 @@ orchestrator chooses its models per role, so ignoring `--model` there would misr
 rules on top. The orchestrator's models are not configurable from the command line, and running
 the whole workflow on one provider needs a new option, which can be added without changing the
 existing ones.
+
+## Publish the CLI to npm as `harness-cli`
+
+**Decision:** publish `@mikode13/harness-cli` to npm through the MiKode automated release
+workflow, starting at `1.0.0`, with `harness-cli` as its command. The package ships only the
+compiled JavaScript.
+
+**Context:** the pull request reviewer runs in CI, where installing a pinned version from npm is
+simpler and more reproducible than building this repository. The MiKode publication standard has
+no automated `0.x` channel, so the first automated release of an unpublished package is `1.0.0`,
+which commits to a stable command-line contract. A command named `harness` is generic enough to
+collide with other tools installed globally, while `harness-cli` matches the package name. The
+package has no importable API, so declarations would publish a contract nobody consumes, and
+source maps would point to sources the package does not ship.
+
+**Consequences:** the command line, the single-turn stdout fields, and the exit codes follow
+Semantic Versioning, so changing or removing one requires a major release. npm and the Git tags
+hold the version, and `package.json` stays at `0.0.0-development`. A fix in the harness, such as
+the one for cancellation during a Claude review (Mikode13/harness#21), reaches users through a
+dependency update in a new release of this package.

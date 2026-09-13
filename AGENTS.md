@@ -6,8 +6,9 @@
 agent contract into an interactive session, and into a single-turn run that a script or a CI
 job can call, while keeping terminal I/O out of the harness package.
 
-The project is source-available and private as an npm package. It is a runnable application,
-not another implementation of the harness library.
+The project is source-available and published to npm as `@mikode13/harness-cli`, which installs
+the `harness-cli` command. It is a runnable application, not another implementation of the
+harness library.
 
 ## Boundaries
 
@@ -51,6 +52,16 @@ not another implementation of the harness library.
 - Build agents only through the harness factories, `createAgent` and `createOrchestrator`. Do
   not import provider SDKs into this repository.
 
+## Releases
+
+- The command line, the single-turn stdout fields, and the exit codes are the published
+  contract. Changing or removing any of them is a breaking change and needs a `!` or a
+  `BREAKING CHANGE` footer in the pull request.
+- `.github/workflows/release.yml` publishes from `main` after CI passes. Keep `package.json` at
+  `0.0.0-development`, never publish by hand, and let the squash commit type decide the release.
+- The package ships only `dist/**/*.js`: `tsconfig.build.json` emits neither declarations nor
+  source maps, and `scripts/pack-check.mjs` fails on any other file in the tarball.
+
 ## Local validation
 
 ```sh
@@ -58,6 +69,7 @@ pnpm install --frozen-lockfile
 pnpm run check
 pnpm test
 pnpm run build
+pnpm run pack:check
 ```
 
 Run the interactive CLI with `pnpm start` after building. The CLI requires valid credentials

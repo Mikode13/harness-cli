@@ -6,20 +6,27 @@ keeping provider orchestration in the harness library and terminal concerns in t
 
 ## Status
 
-This is an early executable baseline. By default the interactive session runs the harness
-workflow: Codex plans and executes, and Claude reviews the result. `--agent` replaces the
-workflow with a single agent and accepts an optional model and reasoning effort. The
-`single-turn` command executes exactly one agent, named with `--agent`, and exits.
+Releases are published to npm as `@mikode13/harness-cli` and install the `harness-cli`
+command. By default the interactive session runs the harness workflow: Codex plans and
+executes, and Claude reviews the result. `--agent` replaces the workflow with a single agent
+and accepts an optional model and reasoning effort. The `single-turn` command executes exactly
+one agent, named with `--agent`, and exits. The command line, the single-turn stdout contract,
+and the exit codes are the stable interface described in [Releases](#releases).
 
-## Prepare and run
+## Install
 
-The CLI supports Node.js 22.13 and later LTS lines, with development pinned to Node.js 24.
-Install dependencies, build the application, and start the interactive session:
+The CLI supports Node.js 22.13 and later LTS lines. Install the command globally and start the
+interactive session:
 
 ```sh
-pnpm install
-pnpm run build
-pnpm start
+npm install --global @mikode13/harness-cli
+harness-cli
+```
+
+A CI job can run a pinned major version without a global install:
+
+```sh
+npx --yes @mikode13/harness-cli@1 single-turn --agent claude "$prompt"
 ```
 
 Type a request at `>`. Press Ctrl+C while an agent is running to cancel that turn and return
@@ -31,15 +38,15 @@ runs enable it with `--auto-approve`, described below.
 
 ## Commands
 
-`harness` without a command starts the interactive session. A command runs a single task and
-exits, which is how the application is used from a script or a CI job. An unknown command is
+`harness-cli` without a command starts the interactive session. A command runs a single task
+and exits, which is how the application is used from a script or a CI job. An unknown command is
 rejected with exit code `2`.
 
 Options given without a command configure the interactive session:
 
 ```sh
-harness                                # the plan → execute → review workflow
-harness --agent claude --model sonnet  # every prompt goes to one agent
+harness-cli                                # the plan → execute → review workflow
+harness-cli --agent claude --model sonnet  # every prompt goes to one agent
 ```
 
 Without `--agent`, the session runs the workflow. With `--agent`, every prompt goes straight to
@@ -71,7 +78,7 @@ a disposable checkout does not protect them.
 The `single-turn` command runs exactly one turn and exits:
 
 ```sh
-harness single-turn --agent claude "Review this diff and answer APPROVE or REQUEST_CHANGES."
+harness-cli single-turn --agent claude "Review this diff and answer APPROVE or REQUEST_CHANGES."
 ```
 
 `--agent` is required. A single-turn run never falls back to a default agent, so the caller
@@ -87,7 +94,7 @@ The prompt must be a single quoted argument. Build it in the caller when it cont
 content:
 
 ```sh
-harness single-turn --agent claude "$(cat review-instructions.md)
+harness-cli single-turn --agent claude "$(cat review-instructions.md)
 
 $(git diff origin/main)"
 ```
@@ -108,7 +115,7 @@ stdout carries the JSON result and nothing else:
 Progress events, warnings, and failures are written to stderr, so the result survives a pipe:
 
 ```sh
-verdict=$(harness single-turn --agent claude "$prompt" | jq -r .response)
+verdict=$(harness-cli single-turn --agent claude "$prompt" | jq -r .response)
 ```
 
 The exit code is `0` when the agent answered, `1` when the run failed, and `2` when the command
@@ -136,18 +143,43 @@ The application depends on the public `Agent`, `ProgressEvent`, error, and compo
 from `@mikode13/harness`. It does not duplicate provider adapters or expose provider SDK
 types as its own public API.
 
-## Validation
+## Development
+
+Development is pinned to Node.js 24. Install dependencies, build the application, and start the
+interactive session from the checkout:
+
+```sh
+pnpm install
+pnpm run build
+pnpm start
+```
+
+Validate a change with:
 
 ```sh
 pnpm run check
 pnpm test
 pnpm run build
+pnpm run pack:check
 ```
 
 `pnpm test` runs the unit suite and the integration suite, and neither contacts a provider. The
 integration suite drives the command line through the real `@mikode13/harness`, replacing only
 the Claude and Codex SDKs, and the terminal for the interactive session, with deterministic
 fakes under `tests/support/fakes/`. Coverage is available with `pnpm run test:coverage`.
+`pnpm run pack:check` builds the package and verifies that the tarball contains exactly the
+compiled JavaScript, the README, the license, and an executable `harness-cli` entry point.
+
+## Releases
+
+Releases are automatic. After CI passes on `main`, `.github/workflows/release.yml` runs the
+MiKode release workflow: semantic-release derives the version from the squash commits since the
+previous release, publishes it to npm with provenance through Trusted Publishing, and creates the
+`v<version>` tag and a GitHub Release. `package.json` stays at `0.0.0-development`.
+
+A `fix` releases a patch, a `feat` a minor version, and a breaking change a major version. The
+command line, the single-turn stdout fields, and the exit codes are the public contract, so
+changing or removing any of them is a breaking change.
 
 ## License
 
