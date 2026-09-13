@@ -1,2 +1,6 @@
 allowBuilds:
   unrs-resolver: true
+# A just-published MiKode release is trusted here, so CI installs it before pnpm's
+# minimum release age has elapsed. Remove the entry once the version is no longer new.
+minimumReleaseAgeExclude:
+  - '@mikode13/cross-platform@1.1.0'
