@@ -5,20 +5,13 @@ import type { IPromptEmitter } from '../promptEmitter.ts';
 export class PromptEmitter implements IPromptEmitter {
 	private readonly rl: readline.Interface;
 
-	constructor() {
+	constructor(onCancel: () => void) {
 		this.rl = readline.createInterface({ input, output });
+		this.rl.on('SIGINT', onCancel);
 	}
 
 	emit(prompt: string, signal: AbortSignal): Promise<string> {
 		return this.rl.question(prompt, { signal });
-	}
-
-	// Registering a 'SIGINT' listener directly on readline keeps Ctrl+C under the loop's control.
-	onInterrupt(listener: () => void): () => void {
-		this.rl.on('SIGINT', listener);
-		return () => {
-			this.rl.off('SIGINT', listener);
-		};
 	}
 
 	close(): void {

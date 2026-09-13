@@ -18,8 +18,8 @@ function createPromptEmitter(...replies: EmitResult[]) {
 	};
 }
 
-function createLogger() {
-	return { log: vi.fn(), warn: vi.fn(), error: vi.fn() };
+function createOutput() {
+	return { print: vi.fn(), printError: vi.fn() };
 }
 
 function response(overrides: Partial<AgentResponse> = {}): AgentResponse {
@@ -37,9 +37,9 @@ function abortError(): DOMException {
 }
 
 describe('ConversationLoop', () => {
-	it('forwards progress and logs usage for a successful response', async () => {
+	it('forwards progress and prints usage for a successful response', async () => {
 		const promptEmitter = createPromptEmitter('hello', { error: abortError() });
-		const logger = createLogger();
+		const output = createOutput();
 		const progress: ProgressEvent = { type: 'reasoning', message: 'thinking' };
 		const callback = vi.fn();
 		const agent: Agent = {
@@ -48,23 +48,22 @@ describe('ConversationLoop', () => {
 				return Promise.resolve(response());
 			}),
 		};
-		const loop = new ConversationLoop(agent, callback, promptEmitter, logger);
+		const loop = new ConversationLoop(agent, callback, promptEmitter, output);
 
 		await loop.start();
 
 		expect(callback).toHaveBeenCalledWith(progress);
-		expect(logger.log).toHaveBeenCalledWith('usage:');
-		expect(logger.log).toHaveBeenCalledWith('duration: 2s');
-		expect(logger.log).toHaveBeenCalledWith('inputTokens: 3');
-		expect(logger.log).toHaveBeenCalledWith('outputTokens: 5');
+		expect(output.print).toHaveBeenCalledWith('usage:');
+		expect(output.print).toHaveBeenCalledWith('duration: 2s');
+		expect(output.print).toHaveBeenCalledWith('inputTokens: 3');
+		expect(output.print).toHaveBeenCalledWith('outputTokens: 5');
 	});
 
 	it('emits turnStarted before running the agent and turnEnded after it settles', async () => {
 		const promptEmitter = createPromptEmitter('hello', { error: abortError() });
-		const logger = createLogger();
 		const callback = vi.fn();
 		const agent: Agent = { run: vi.fn().mockResolvedValue(response()) };
-		const loop = new ConversationLoop(agent, callback, promptEmitter, logger);
+		const loop = new ConversationLoop(agent, callback, promptEmitter, createOutput());
 
 		await loop.start();
 
@@ -74,10 +73,9 @@ describe('ConversationLoop', () => {
 
 	it('still emits turnEnded when the agent run fails', async () => {
 		const promptEmitter = createPromptEmitter('hello', { error: abortError() });
-		const logger = createLogger();
 		const callback = vi.fn();
 		const agent: Agent = { run: vi.fn().mockRejectedValue(new Error('boom')) };
-		const loop = new ConversationLoop(agent, callback, promptEmitter, logger);
+		const loop = new ConversationLoop(agent, callback, promptEmitter, createOutput());
 
 		await loop.start();
 
@@ -85,22 +83,21 @@ describe('ConversationLoop', () => {
 		expect(eventTypes).toEqual(['turnStarted', 'turnEnded']);
 	});
 
-	it('does not log usage when the agent has no response', async () => {
+	it('does not print usage when the agent has no response', async () => {
 		const promptEmitter = createPromptEmitter('hello', { error: abortError() });
-		const logger = createLogger();
+		const output = createOutput();
 		const agent: Agent = { run: vi.fn().mockResolvedValue(undefined) };
-		const loop = new ConversationLoop(agent, vi.fn(), promptEmitter, logger);
+		const loop = new ConversationLoop(agent, vi.fn(), promptEmitter, output);
 
 		await loop.start();
 
-		expect(logger.log).not.toHaveBeenCalled();
+		expect(output.print).not.toHaveBeenCalled();
 	});
 
 	it('exits immediately on an interrupt while idle at the prompt', async () => {
 		const promptEmitter = createPromptEmitter({ error: abortError() });
-		const logger = createLogger();
 		const run = vi.fn();
-		const loop = new ConversationLoop({ run }, vi.fn(), promptEmitter, logger);
+		const loop = new ConversationLoop({ run }, vi.fn(), promptEmitter, createOutput());
 
 		await loop.start();
 
@@ -110,9 +107,8 @@ describe('ConversationLoop', () => {
 
 	it('cancels only the current turn on an interrupt while the agent is running, then asks for the next prompt', async () => {
 		const promptEmitter = createPromptEmitter('hello', 'world', { error: abortError() });
-		const logger = createLogger();
 		const run = vi.fn().mockRejectedValueOnce(abortError()).mockResolvedValueOnce(response());
-		const loop = new ConversationLoop({ run }, vi.fn(), promptEmitter, logger);
+		const loop = new ConversationLoop({ run }, vi.fn(), promptEmitter, createOutput());
 
 		await loop.start();
 
@@ -120,17 +116,17 @@ describe('ConversationLoop', () => {
 		expect(promptEmitter.emit).toHaveBeenCalledTimes(3);
 	});
 
-	it('stops after an unrecoverable agent failure', async () => {
+	it('reports an unrecoverable agent failure and stops asking for prompts', async () => {
 		const promptEmitter = createPromptEmitter('hello');
-		const logger = createLogger();
+		const output = createOutput();
 		const failure = new UnrecoverableError('cannot continue', { cause: 'fatal' });
 		const agent: Agent = { run: vi.fn().mockRejectedValue(failure) };
-		const loop = new ConversationLoop(agent, vi.fn(), promptEmitter, logger);
+		const loop = new ConversationLoop(agent, vi.fn(), promptEmitter, output);
 
 		await loop.start();
 
-		expect(logger.log).toHaveBeenCalledWith(failure);
-		expect(logger.error).not.toHaveBeenCalled();
+		expect(output.printError).toHaveBeenCalledWith(failure);
+		expect(promptEmitter.emit).toHaveBeenCalledOnce();
 	});
 
 	it('reports an unexpected prompt failure and asks again', async () => {
@@ -138,26 +134,26 @@ describe('ConversationLoop', () => {
 			{ error: new Error('unexpected') },
 			{ error: abortError() },
 		);
-		const logger = createLogger();
+		const output = createOutput();
 		const run = vi.fn();
-		const loop = new ConversationLoop({ run }, vi.fn(), promptEmitter, logger);
+		const loop = new ConversationLoop({ run }, vi.fn(), promptEmitter, output);
 
 		await loop.start();
 
-		expect(logger.error).toHaveBeenCalledWith(new Error('unexpected'));
+		expect(output.printError).toHaveBeenCalledWith(new Error('unexpected'));
 		expect(run).not.toHaveBeenCalled();
 	});
 
 	it('reports unexpected agent failures before continuing', async () => {
 		const promptEmitter = createPromptEmitter('hello', { error: abortError() });
-		const logger = createLogger();
+		const output = createOutput();
 		const failure = new Error('unexpected');
 		const agent: Agent = { run: vi.fn().mockRejectedValue(failure) };
-		const loop = new ConversationLoop(agent, vi.fn(), promptEmitter, logger);
+		const loop = new ConversationLoop(agent, vi.fn(), promptEmitter, output);
 
 		await loop.start();
 
-		expect(logger.error).toHaveBeenCalledWith(failure);
+		expect(output.printError).toHaveBeenCalledWith(failure);
 	});
 
 	it('cancel() aborts the signal passed to the active operation', async () => {
@@ -169,8 +165,7 @@ describe('ConversationLoop', () => {
 			}),
 			close: vi.fn(),
 		};
-		const logger = createLogger();
-		const loop = new ConversationLoop({ run: vi.fn() }, vi.fn(), promptEmitter, logger);
+		const loop = new ConversationLoop({ run: vi.fn() }, vi.fn(), promptEmitter, createOutput());
 
 		void loop.start();
 		await Promise.resolve();
@@ -182,12 +177,12 @@ describe('ConversationLoop', () => {
 
 	it('closes the prompt emitter and says goodbye', () => {
 		const promptEmitter = createPromptEmitter();
-		const logger = createLogger();
-		const loop = new ConversationLoop({ run: vi.fn() }, vi.fn(), promptEmitter, logger);
+		const output = createOutput();
+		const loop = new ConversationLoop({ run: vi.fn() }, vi.fn(), promptEmitter, output);
 
 		loop.close();
 
 		expect(promptEmitter.close).toHaveBeenCalledOnce();
-		expect(logger.log).toHaveBeenCalledWith('thanks, bye!');
+		expect(output.print).toHaveBeenCalledWith('thanks, bye!');
 	});
 });

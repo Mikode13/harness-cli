@@ -1,19 +1,20 @@
-import type { Agent, Callback, ILogger } from '@mikode13/harness';
+import type { Agent, Callback } from '@mikode13/harness';
 import { UnrecoverableError, isAbortError } from '@mikode13/harness';
 import type { IPromptEmitter } from './promptEmitter.ts';
+import type { IOutput } from './output.ts';
 
 export class ConversationLoop {
 	private readonly promptEmitter: IPromptEmitter;
-	private readonly logger: ILogger;
+	private readonly output: IOutput;
 	private readonly agent: Agent;
 	private readonly callback: Callback;
 	private abortController?: AbortController;
 
-	constructor(agent: Agent, callback: Callback, promptEmitter: IPromptEmitter, logger: ILogger) {
+	constructor(agent: Agent, callback: Callback, promptEmitter: IPromptEmitter, output: IOutput) {
 		this.agent = agent;
 		this.callback = callback;
 		this.promptEmitter = promptEmitter;
-		this.logger = logger;
+		this.output = output;
 	}
 
 	async start(): Promise<void> {
@@ -25,7 +26,7 @@ export class ConversationLoop {
 				prompt = await this.promptEmitter.emit('> ', this.abortController.signal);
 			} catch (error) {
 				if (isAbortError(error)) break;
-				this.logger.error(error);
+				this.output.printError(error);
 				continue;
 			}
 
@@ -39,20 +40,20 @@ export class ConversationLoop {
 				);
 
 				if (agentResponse) {
-					this.logger.log('usage:');
-					this.logger.log(`duration: ${String(agentResponse.duration)}s`);
-					this.logger.log(`inputTokens: ${String(agentResponse.inputTokens)}`);
-					this.logger.log(`outputTokens: ${String(agentResponse.outputTokens)}`);
+					this.output.print('usage:');
+					this.output.print(`duration: ${String(agentResponse.duration)}s`);
+					this.output.print(`inputTokens: ${String(agentResponse.inputTokens)}`);
+					this.output.print(`outputTokens: ${String(agentResponse.outputTokens)}`);
 				}
 			} catch (error) {
 				if (isAbortError(error)) continue;
 
 				if (error instanceof UnrecoverableError) {
-					this.logger.log(error);
+					this.output.printError(error);
 					break;
 				}
 
-				this.logger.error(error);
+				this.output.printError(error);
 			} finally {
 				this.callback({ type: 'turnEnded' });
 			}
@@ -65,6 +66,6 @@ export class ConversationLoop {
 
 	close(): void {
 		this.promptEmitter.close();
-		this.logger.log('thanks, bye!');
+		this.output.print('thanks, bye!');
 	}
 }
