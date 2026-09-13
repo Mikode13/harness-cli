@@ -84,7 +84,11 @@ export class Repl {
 	};
 
 	async start(): Promise<void> {
-		await this.loop.start();
-		this.loop.close();
+		// An open readline interface keeps the process alive, so it closes on failure too.
+		try {
+			await this.loop.start();
+		} finally {
+			this.loop.close();
+		}
 	}
 }

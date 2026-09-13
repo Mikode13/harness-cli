@@ -180,4 +180,13 @@ describe('interactive session lifecycle', () => {
 		expect(loop.start).toHaveBeenCalledOnce();
 		expect(loop.close).toHaveBeenCalledAfter(loop.start);
 	});
+
+	it('closes the loop when it fails, so the terminal does not keep the process alive', async () => {
+		const failure = new Error('the terminal failed');
+		loop.start.mockRejectedValueOnce(failure);
+
+		await expect(new Repl([]).start()).rejects.toBe(failure);
+
+		expect(loop.close).toHaveBeenCalledOnce();
+	});
 });
