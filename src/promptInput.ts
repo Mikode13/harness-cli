@@ -32,7 +32,7 @@ export async function readPromptFile(
 }
 
 async function readPromptFromStdin(signal: AbortSignal, input: PromptInput): Promise<string> {
-	const chunks: string[] = [];
+	const chunks: Buffer[] = [];
 	const abort = (): void => {
 		input.destroy(signal.reason instanceof Error ? signal.reason : undefined);
 	};
@@ -41,9 +41,9 @@ async function readPromptFromStdin(signal: AbortSignal, input: PromptInput): Pro
 	signal.addEventListener('abort', abort, { once: true });
 	try {
 		for await (const chunk of input) {
-			chunks.push(typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8'));
+			chunks.push(typeof chunk === 'string' ? Buffer.from(chunk, 'utf8') : Buffer.from(chunk));
 		}
-		return chunks.join('');
+		return Buffer.concat(chunks).toString('utf8');
 	} finally {
 		signal.removeEventListener('abort', abort);
 	}

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { Readable } from 'node:stream';
 import { dispatch } from '../../src/dispatch.js';
 import { claudeSdk } from '../support/fakes/claudeAgentSdk.fake.js';
 import { codexSdk } from '../support/fakes/codexSdk.fake.js';
@@ -80,6 +81,26 @@ describe('single-turn run through the harness', () => {
 		).resolves.toBe(0);
 
 		expect(claudeSdk.calls.map(call => call.prompt)).toEqual(['review this diff from a file']);
+		expect(result()).toMatchObject({ response: 'APPROVE' });
+	});
+
+	it('reads a split UTF-8 prompt from stdin before running the real harness', async () => {
+		const encoded = Buffer.from('revisa este diff: áéíóú');
+		const split = encoded.indexOf(Buffer.from('á')) + 1;
+		const input = Readable.from([encoded.subarray(0, split), encoded.subarray(split)]);
+		const stdinDescriptor = Object.getOwnPropertyDescriptor(process, 'stdin');
+		Object.defineProperty(process, 'stdin', { configurable: true, value: input });
+		claudeSdk.respond('APPROVE');
+
+		try {
+			await expect(
+				dispatch(['single-turn', '--agent', 'claude', '--prompt-file', '-']),
+			).resolves.toBe(0);
+		} finally {
+			if (stdinDescriptor) Object.defineProperty(process, 'stdin', stdinDescriptor);
+		}
+
+		expect(claudeSdk.calls.map(call => call.prompt)).toEqual(['revisa este diff: áéíóú']);
 		expect(result()).toMatchObject({ response: 'APPROVE' });
 	});
 

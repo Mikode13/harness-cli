@@ -162,6 +162,16 @@ describe('stdin prompt files', () => {
 		);
 	});
 
+	it('does not corrupt a multibyte character split across stdin chunks', async () => {
+		const encoded = Buffer.from('revisa este diff: áéíóú');
+		const split = encoded.indexOf(Buffer.from('á')) + 1;
+		const input = Readable.from([encoded.subarray(0, split), encoded.subarray(split)]);
+
+		await expect(readPromptFile('-', new AbortController().signal, input)).resolves.toBe(
+			'revisa este diff: áéíóú',
+		);
+	});
+
 	it('stops reading stdin when the signal is aborted', async () => {
 		const controller = new AbortController();
 		const input = new Readable({
