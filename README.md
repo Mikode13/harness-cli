@@ -94,14 +94,24 @@ that such a run can stall instead of failing. Put what the agent needs, such as 
 prompt instead of asking it to run commands, and give the CI job a timeout, such as
 `timeout-minutes` in GitHub Actions: the `SIGTERM` sent when it expires cancels the run.
 
-The prompt must be a single quoted argument. Build it in the caller when it contains generated
-content:
+Short prompts can be passed as one quoted argument. Build larger or generated prompts in a file
+and pass `--prompt-file` instead:
 
 ```sh
-harness-cli single-turn --agent claude "$(cat review-instructions.md)
-
-$(git diff origin/main)"
+harness-cli single-turn --agent claude --prompt-file ./review-prompt.txt
 ```
+
+The file is read as UTF-8. Use `--prompt-file -` to read the prompt from stdin:
+
+```sh
+cat review-prompt.txt | harness-cli single-turn --agent claude --prompt-file -
+```
+
+The positional prompt and `--prompt-file` are mutually exclusive. A prompt file avoids shell
+quoting and operating-system argument-size limits, so it is the preferred form when the prompt
+contains a diff or other generated content. The file path is resolved from the current working
+directory. This option applies only to `single-turn`; the interactive session continues to read
+prompts from its terminal.
 
 ### Output contract
 
@@ -140,6 +150,7 @@ stop the provider call instead of waiting for it.
   usage reporting.
 - `src/singleTurn.ts` requires `--agent` and a prompt, builds the agent with `createAgent`,
   cancels on `SIGINT` and `SIGTERM`, and serializes the stdout contract.
+- `src/promptInput.ts` reads a single-turn prompt from a UTF-8 file or stdin.
 - `src/adapters/` adapts readline and the console to the terminal ports.
 - `src/progressEventFormatter.ts` renders provider-independent `ProgressEvent` values.
 

@@ -20,6 +20,7 @@ describe('parseHarnessArgs', () => {
 				model: 'gpt-5.6-luna',
 				reasoningEffort: 'xhigh',
 				autoApprove: true,
+				promptFile: undefined,
 			},
 			positionals: [],
 		});
@@ -30,6 +31,7 @@ describe('parseHarnessArgs', () => {
 
 		expect(options.provider).toBeUndefined();
 		expect(options.autoApprove).toBe(false);
+		expect(options.promptFile).toBeUndefined();
 	});
 
 	it('returns the positionals when the caller allows them', () => {
@@ -38,6 +40,13 @@ describe('parseHarnessArgs', () => {
 		});
 
 		expect(positionals).toEqual(['review this diff']);
+	});
+
+	it('reads the prompt file option', () => {
+		expect(
+			parseHarnessArgs(['--prompt-file', 'prompt.txt'], { allowPositionals: true }).options
+				.promptFile,
+		).toBe('prompt.txt');
 	});
 
 	it.each([

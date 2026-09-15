@@ -4,10 +4,11 @@ import { formatProgressEvent } from './progressEventFormatter.ts';
 import { CliUsageError } from './errors.ts';
 import { Output } from './adapters/output.ts';
 import { parseHarnessArgs } from './agentOptions.ts';
+import { readPromptFile } from './promptInput.ts';
 
 function getAgentsConfig(args: readonly string[]) {
 	const { options, positionals } = parseHarnessArgs(args, { allowPositionals: true });
-	const { provider, model, reasoningEffort, autoApprove } = options;
+	const { provider, model, reasoningEffort, autoApprove, promptFile } = options;
 
 	if (!provider) {
 		throw new CliUsageError('Agent is a required argument');
@@ -15,15 +16,25 @@ function getAgentsConfig(args: readonly string[]) {
 
 	const [prompt, ...extraPrompts] = positionals;
 
+	if (promptFile !== undefined && positionals.length > 0) {
+		throw new CliUsageError(
+			'Provide the prompt either positionally or with --prompt-file, not both',
+		);
+	}
+
 	if (extraPrompts.length > 0) {
 		throw new CliUsageError('Expected a single prompt. Quote it as one argument.');
 	}
 
-	if (!prompt || prompt.trim() === '') {
+	if (promptFile === '') {
+		throw new CliUsageError('--prompt-file requires a path or - for stdin');
+	}
+
+	if (promptFile === undefined && (!prompt || prompt.trim() === '')) {
 		throw new CliUsageError("The prompt can't be empty");
 	}
 
-	return { provider, model, reasoningEffort, autoApprove, prompt };
+	return { provider, model, reasoningEffort, autoApprove, prompt, promptFile };
 }
 
 function serializeResponse({ duration, inputTokens, outputTokens, response }: AgentResponse) {
@@ -36,9 +47,14 @@ function serializeResponse({ duration, inputTokens, outputTokens, response }: Ag
 }
 
 export async function start(args: readonly string[]) {
-	const { provider, autoApprove, model, prompt, reasoningEffort } = getAgentsConfig(args);
-
-	const aiAgent = createAgent(provider, { model, reasoningEffort, autoApprove });
+	const {
+		provider,
+		autoApprove,
+		model,
+		prompt: positionalPrompt,
+		promptFile,
+		reasoningEffort,
+	} = getAgentsConfig(args);
 	const output = new Output();
 
 	// Ctrl+C sends SIGINT and a cancelled CI job sends SIGTERM. `once` leaves a second signal to
@@ -52,6 +68,15 @@ export async function start(args: readonly string[]) {
 	process.once('SIGTERM', abort);
 
 	try {
+		const prompt =
+			promptFile === undefined
+				? positionalPrompt
+				: await readPromptFile(promptFile, abortController.signal);
+		if (prompt === undefined || prompt.trim() === '') {
+			throw new CliUsageError("The prompt can't be empty");
+		}
+
+		const aiAgent = createAgent(provider, { model, reasoningEffort, autoApprove });
 		const response = await aiAgent.run(prompt, abortController.signal, item => {
 			const message = formatProgressEvent(item);
 			if (message) {
