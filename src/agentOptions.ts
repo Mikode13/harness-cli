@@ -9,6 +9,7 @@ export interface AgentOptions {
 	model?: AgentModel;
 	reasoningEffort?: ReasoningEffort;
 	autoApprove: boolean;
+	promptFile?: string;
 }
 
 function parseOrReject(args: readonly string[], allowPositionals: boolean) {
@@ -20,6 +21,7 @@ function parseOrReject(args: readonly string[], allowPositionals: boolean) {
 				'reasoning-effort': { type: 'string' },
 				model: { type: 'string' },
 				'auto-approve': { type: 'boolean' },
+				'prompt-file': { type: 'string' },
 			},
 			allowPositionals,
 		});
@@ -51,6 +53,7 @@ export function parseHarnessArgs(
 			model: values.model as AgentModel | undefined,
 			reasoningEffort: values['reasoning-effort'] as ReasoningEffort | undefined,
 			autoApprove: values['auto-approve'] ?? false,
+			promptFile: values['prompt-file'],
 		},
 		positionals,
 	};

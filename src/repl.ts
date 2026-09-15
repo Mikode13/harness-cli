@@ -13,9 +13,13 @@ const exitConfirmationWindowMs = 3000;
 
 /** `--agent` talks to one agent directly; without it the session runs the orchestrator. */
 function buildAgent(args: readonly string[]): Agent {
-	const { provider, model, reasoningEffort, autoApprove } = parseHarnessArgs(args, {
+	const { provider, model, reasoningEffort, autoApprove, promptFile } = parseHarnessArgs(args, {
 		allowPositionals: false,
 	}).options;
+
+	if (promptFile !== undefined) {
+		throw new CliUsageError('--prompt-file is only available with single-turn');
+	}
 
 	if (!provider) {
 		// The orchestrator picks its own models, so ignoring these would misreport what runs.

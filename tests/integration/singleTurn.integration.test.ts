@@ -1,4 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Readable } from 'node:stream';
 import { dispatch } from '../../src/dispatch.js';
 import { claudeSdk } from '../support/fakes/claudeAgentSdk.fake.js';
 import { codexSdk } from '../support/fakes/codexSdk.fake.js';
@@ -8,6 +12,15 @@ import { captureOutput, type CapturedOutput } from '../support/fixtures/output.f
 // the provider SDKs to fakes, so these tests never contact Claude or Codex.
 
 let output: CapturedOutput;
+let temporaryDirectory: string;
+
+beforeAll(async () => {
+	temporaryDirectory = await mkdtemp(join(tmpdir(), 'harness-cli-integration-'));
+});
+
+afterAll(async () => {
+	await rm(temporaryDirectory, { recursive: true, force: true });
+});
 
 beforeEach(() => {
 	vi.restoreAllMocks();
@@ -56,6 +69,52 @@ describe('single-turn run through the harness', () => {
 			outputTokens: 40,
 		});
 		expect(codexSdk.prompts).toEqual(['review this diff']);
+	});
+
+	it('reads a prompt from a file before running the real harness', async () => {
+		const path = join(temporaryDirectory, 'prompt.txt');
+		await writeFile(path, 'review this diff from a file', 'utf8');
+		claudeSdk.respond('APPROVE');
+
+		await expect(
+			dispatch(['single-turn', '--agent', 'claude', '--prompt-file', path]),
+		).resolves.toBe(0);
+
+		expect(claudeSdk.calls.map(call => call.prompt)).toEqual(['review this diff from a file']);
+		expect(result()).toMatchObject({ response: 'APPROVE' });
+	});
+
+	it('reads a split UTF-8 prompt from stdin before running the real harness', async () => {
+		const encoded = Buffer.from('revisa este diff: áéíóú');
+		const split = encoded.indexOf(Buffer.from('á')) + 1;
+		const input = Readable.from([encoded.subarray(0, split), encoded.subarray(split)]);
+		const stdinDescriptor = Object.getOwnPropertyDescriptor(process, 'stdin');
+		Object.defineProperty(process, 'stdin', { configurable: true, value: input });
+		claudeSdk.respond('APPROVE');
+
+		try {
+			await expect(
+				dispatch(['single-turn', '--agent', 'claude', '--prompt-file', '-']),
+			).resolves.toBe(0);
+		} finally {
+			if (stdinDescriptor) Object.defineProperty(process, 'stdin', stdinDescriptor);
+		}
+
+		expect(claudeSdk.calls.map(call => call.prompt)).toEqual(['revisa este diff: áéíóú']);
+		expect(result()).toMatchObject({ response: 'APPROVE' });
+	});
+
+	it('passes a prompt larger than MAX_ARG_STRLEN through a file', async () => {
+		const prompt = 'x'.repeat(128 * 1024 + 1);
+		const path = join(temporaryDirectory, 'large-prompt.txt');
+		await writeFile(path, prompt, 'utf8');
+		claudeSdk.respond('APPROVE');
+
+		await expect(
+			dispatch(['single-turn', '--agent', 'claude', '--prompt-file', path]),
+		).resolves.toBe(0);
+
+		expect(claudeSdk.calls.map(call => call.prompt)).toEqual([prompt]);
 	});
 
 	it('writes progress to stderr only', async () => {
@@ -141,6 +200,23 @@ describe('single-turn options reach the provider', () => {
 });
 
 describe('single-turn failures', () => {
+	it('rejects a missing prompt file with exit code 2 before contacting the provider', async () => {
+		await expect(
+			dispatch([
+				'single-turn',
+				'--agent',
+				'claude',
+				'--prompt-file',
+				join(temporaryDirectory, 'missing.txt'),
+			]),
+		).resolves.toBe(2);
+
+		expect(output.stdout()).toBe('');
+		expect(output.stderr()).toContain('Unable to read prompt from file');
+		expect(output.stderr()).toContain('Usage:');
+		expect(claudeSdk.calls).toHaveLength(0);
+	});
+
 	it.each([
 		[
 			'a model of another provider',

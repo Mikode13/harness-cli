@@ -1,8 +1,13 @@
-import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Readable } from 'node:stream';
 import type * as Harness from '@mikode13/harness';
 import type { Agent, AgentResponse, ProgressEvent } from '@mikode13/harness';
 import { UnrecoverableError, createAgent } from '@mikode13/harness';
 import { CliUsageError } from '../../src/errors.js';
+import { readPromptFile } from '../../src/promptInput.js';
 import { start } from '../../src/singleTurn.js';
 
 // createAgent is the provider boundary: the real one would build an SDK client and spend
@@ -29,6 +34,15 @@ function useAgent(run: Agent['run']) {
 }
 
 let stdout: MockInstance<typeof console.log>;
+let temporaryDirectory: string;
+
+beforeEach(async () => {
+	temporaryDirectory = await mkdtemp(join(tmpdir(), 'harness-cli-'));
+});
+
+afterEach(async () => {
+	await rm(temporaryDirectory, { recursive: true, force: true });
+});
 
 function stdoutLines(): string[] {
 	return stdout.mock.calls.map(call => String(call[0]));
@@ -77,6 +91,98 @@ describe('single-turn usage errors', () => {
 		await expect(start(['--agent', 'claude', 'review', 'this', 'diff'])).rejects.toBeInstanceOf(
 			CliUsageError,
 		);
+	});
+
+	it('rejects a positional prompt together with --prompt-file', async () => {
+		await expect(
+			start(['--agent', 'claude', '--prompt-file', 'prompt.txt', 'review this diff']),
+		).rejects.toBeInstanceOf(CliUsageError);
+		expect(createAgent).not.toHaveBeenCalled();
+	});
+
+	it('rejects an empty --prompt-file value', async () => {
+		await expect(start(['--agent', 'claude', '--prompt-file', ''])).rejects.toBeInstanceOf(
+			CliUsageError,
+		);
+	});
+});
+
+describe('single-turn prompt files', () => {
+	it('reads and forwards a prompt from a file', async () => {
+		const path = join(temporaryDirectory, 'prompt.txt');
+		await writeFile(path, 'review this diff from a file', 'utf8');
+		const run = useAgent(prompt => {
+			expect(prompt).toBe('review this diff from a file');
+			return Promise.resolve(response());
+		});
+
+		await start(['--agent', 'claude', '--prompt-file', path]);
+
+		expect(run).toHaveBeenCalledOnce();
+	});
+
+	it('rejects a missing prompt file as a usage error', async () => {
+		await expect(
+			start(['--agent', 'claude', '--prompt-file', join(temporaryDirectory, 'missing.txt')]),
+		).rejects.toThrow('Unable to read prompt from file');
+		expect(createAgent).not.toHaveBeenCalled();
+	});
+
+	it('rejects a whitespace-only prompt file', async () => {
+		const path = join(temporaryDirectory, 'prompt.txt');
+		await writeFile(path, ' \n\t', 'utf8');
+
+		await expect(start(['--agent', 'claude', '--prompt-file', path])).rejects.toBeInstanceOf(
+			CliUsageError,
+		);
+		expect(createAgent).not.toHaveBeenCalled();
+	});
+
+	it('forwards a prompt larger than the per-argument operating-system limit', async () => {
+		const prompt = 'x'.repeat(128 * 1024 + 1);
+		const path = join(temporaryDirectory, 'large-prompt.txt');
+		await writeFile(path, prompt, 'utf8');
+		const run = useAgent(received => {
+			expect(received).toBe(prompt);
+			return Promise.resolve(response());
+		});
+
+		await start(['--agent', 'claude', '--prompt-file', path]);
+
+		expect(run).toHaveBeenCalledOnce();
+	});
+});
+
+describe('stdin prompt files', () => {
+	it('reads UTF-8 prompt content from stdin', async () => {
+		const input = Readable.from(['revisa este diff: ', 'áéíóú']);
+
+		await expect(readPromptFile('-', new AbortController().signal, input)).resolves.toBe(
+			'revisa este diff: áéíóú',
+		);
+	});
+
+	it('does not corrupt a multibyte character split across stdin chunks', async () => {
+		const encoded = Buffer.from('revisa este diff: áéíóú');
+		const split = encoded.indexOf(Buffer.from('á')) + 1;
+		const input = Readable.from([encoded.subarray(0, split), encoded.subarray(split)]);
+
+		await expect(readPromptFile('-', new AbortController().signal, input)).resolves.toBe(
+			'revisa este diff: áéíóú',
+		);
+	});
+
+	it('stops reading stdin when the signal is aborted', async () => {
+		const controller = new AbortController();
+		const input = new Readable({
+			read() {
+				// Keep the input open until the caller cancels it.
+			},
+		});
+		const reading = readPromptFile('-', controller.signal, input);
+		controller.abort();
+
+		await expect(reading).rejects.toMatchObject({ name: 'AbortError' });
 	});
 });
 

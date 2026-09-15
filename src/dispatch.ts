@@ -4,8 +4,9 @@ import { Repl } from './repl.ts';
 import { start as startSingleTurn } from './singleTurn.ts';
 
 const usage = `Usage:
-  harness-cli [options]                                         Start the interactive session.
-  harness-cli single-turn --agent <agent> [options] "<prompt>"  Run one turn and print a JSON result to stdout.
+  harness-cli [options]                                                  Start the interactive session.
+  harness-cli single-turn --agent <agent> [options] "<prompt>"           Run one turn and print a JSON result to stdout.
+  harness-cli single-turn --agent <agent> [options] --prompt-file <path>  Read the prompt from a file, or - for stdin.
 
 Options:
   --agent             ${agentProviders.join(', ')}. Required by single-turn. Without it, the interactive

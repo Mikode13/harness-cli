@@ -106,6 +106,7 @@ describe('interactive session agent', () => {
 		['a reasoning effort without an agent', ['--reasoning-effort', 'low']],
 		['an unknown agent', ['--agent', 'gemini']],
 		['a prompt, which only single-turn takes', ['review this diff']],
+		['a prompt file, which only single-turn takes', ['--prompt-file', 'prompt.txt']],
 	])('rejects %s before readline takes over stdin', (_case, args) => {
 		expect(() => new Repl(args)).toThrow(CliUsageError);
 		// An open readline interface would keep the process alive instead of exiting with 2.
