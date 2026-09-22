@@ -10,25 +10,13 @@ The project is source-available and published to npm as `@mikode13/harness-cli`,
 the `harness-cli` command. It is a runnable application, not another implementation of the
 harness library.
 
-## Boundaries
+## Architecture
 
-- `src/cli.ts` is the entry point. It sets the process exit code from `src/dispatch.ts`.
-- `src/dispatch.ts` owns the command-line contract: it selects the interactive session or a
-  command, prints the usage for a rejected command line, and maps each outcome to an exit code.
-  Options without a command configure the interactive session.
-- `src/agentOptions.ts` parses the agent options both modes share. Each mode applies its own
-  rules on top: whether `--agent` is required and what a positional means.
-- `src/repl.ts` and `src/conversationLoop.ts` own the interactive session: the agent it runs,
-  the spinner in `src/spinner.ts`, Ctrl+C handling, the turn-by-turn terminal lifecycle,
-  cancellation, and usage reporting.
-- `src/singleTurn.ts` owns the `single-turn` command: its prompt, signal cancellation, and the
-  stdout contract.
-- `src/errors.ts` holds `CliUsageError`, which marks a rejected command line.
-- `src/promptEmitter.ts` and `src/output.ts` are the terminal ports; `src/adapters/` contains
-  their readline and console adapters.
-- `src/progressEventFormatter.ts` translates harness progress events into terminal output.
-- Provider behavior, error classification, and agent contracts belong in
-  `@mikode13/harness`; do not copy them into this repository.
+[`docs/architecture.md`](docs/architecture.md) is the authoritative source for the current
+module responsibilities, dependency direction, public contracts, and important flows. Read it
+before placing a change, and update it in the same pull request when a change moves one of those
+boundaries. Provider behavior, error classification, and agent contracts belong in
+`@mikode13/harness`; do not copy them into this repository.
 
 ## Operational constraints
 

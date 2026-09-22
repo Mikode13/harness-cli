@@ -138,25 +138,10 @@ stop the provider call instead of waiting for it.
 
 ## Architecture
 
-- `src/cli.ts` is the entry point and sets the process exit code.
-- `src/dispatch.ts` dispatches on the command: none, or only options, starts the interactive
-  session, and `single-turn` runs one turn. It prints the usage for a rejected command line and
-  maps each outcome to an exit code.
-- `src/agentOptions.ts` parses the agent options both modes share.
-- `src/repl.ts` composes the interactive session: it builds the workflow with
-  `createOrchestrator`, or the agent named with `--agent` with `createAgent`, and owns the
-  spinner in `src/spinner.ts` and the Ctrl+C handling.
-- `src/conversationLoop.ts` drives prompts, cancellation, progress callbacks, and per-turn
-  usage reporting.
-- `src/singleTurn.ts` requires `--agent` and a prompt, builds the agent with `createAgent`,
-  cancels on `SIGINT` and `SIGTERM`, and serializes the stdout contract.
-- `src/promptInput.ts` reads a single-turn prompt from a UTF-8 file or stdin.
-- `src/adapters/` adapts readline and the console to the terminal ports.
-- `src/progressEventFormatter.ts` renders provider-independent `ProgressEvent` values.
-
-The application depends on the public `Agent`, `ProgressEvent`, error, and composition APIs
-from `@mikode13/harness`. It does not duplicate provider adapters or expose provider SDK
-types as its own public API.
+[`docs/architecture.md`](docs/architecture.md) is the authoritative current description of
+this application's responsibilities, dependency direction, public contracts, and interactive
+and single-turn flows. Update it in the same pull request when a change moves one of those
+boundaries.
 
 ## Development
 
