@@ -10,6 +10,21 @@ The project is source-available and published to npm as `@mikode13/harness-cli`,
 the `harness-cli` command. It is a runnable application, not another implementation of the
 harness library.
 
+## Product design
+
+The product's scope, glossary, flows and design live in
+[`Mikode13/harness-docs`](https://github.com/Mikode13/harness-docs), which covers this CLI,
+the API and the mobile app together. Read its `README.md`, its `glossary.md` and the flow or
+design document of the area before designing or implementing a feature here, and use the
+glossary's terms.
+
+A change here that departs from one of those documents updates it there in the same batch of
+work, with an entry in its `docs/decisions.md` that says why. This repository's `docs/` describe
+this application: its architecture and the decisions that are its own. A decision about the
+product that crosses its projects is recorded in `harness-docs`; one that is both is recorded
+in both logs, each linking the other. A rule for every MiKode project is neither: it goes
+through the ADR process of `Mikode13/engineering`.
+
 ## Architecture
 
 [`docs/architecture.md`](docs/architecture.md) is the authoritative source for the current
