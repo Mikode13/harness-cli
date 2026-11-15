@@ -19,7 +19,7 @@ design document of the area before designing or implementing a feature here, and
 glossary's terms.
 
 A change here that departs from one of those documents updates it there in the same batch of
-work, with an entry in its `decisions.md` that says why. This repository's `docs/` describe
+work, with an entry in its `docs/decisions.md` that says why. This repository's `docs/` describe
 this application: its architecture and the decisions that are its own. A decision that crosses
 projects is recorded in `harness-docs`; one that does both is recorded in both logs, each
 linking the other.
