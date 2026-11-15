@@ -20,7 +20,9 @@ glossary's terms.
 
 A change here that departs from one of those documents updates it there in the same batch of
 work, with an entry in its `decisions.md` that says why. This repository's `docs/` describe
-only how this application is built.
+this application: its architecture and the decisions that are its own. A decision that crosses
+projects is recorded in `harness-docs`; one that does both is recorded in both logs, each
+linking the other.
 
 ## Architecture
 
