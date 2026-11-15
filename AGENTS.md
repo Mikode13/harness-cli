@@ -20,9 +20,10 @@ glossary's terms.
 
 A change here that departs from one of those documents updates it there in the same batch of
 work, with an entry in its `docs/decisions.md` that says why. This repository's `docs/` describe
-this application: its architecture and the decisions that are its own. A decision that crosses
-projects is recorded in `harness-docs`; one that does both is recorded in both logs, each
-linking the other.
+this application: its architecture and the decisions that are its own. A decision about the
+product that crosses its projects is recorded in `harness-docs`; one that is both is recorded
+in both logs, each linking the other. A rule for every MiKode project is neither: it goes
+through the ADR process of `Mikode13/engineering`.
 
 ## Architecture
 
