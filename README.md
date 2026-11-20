@@ -13,10 +13,22 @@ and accepts an optional model and reasoning effort. The `single-turn` command ex
 one agent, named with `--agent`, and exits. The command line, the single-turn stdout contract,
 and the exit codes are the stable interface described in [Releases](#releases).
 
+The released CLI executes locally through the harness's Codex and Claude Agent SDK adapters.
+It does not connect to `harness-api`, keep an application-managed conversation store or resume
+a conversation on another device. The model API path available in the harness library is not
+exposed by this CLI yet.
+
+[Server mode](https://github.com/Mikode13/harness-cli/issues/18) and
+[local conversation storage](https://github.com/Mikode13/harness-cli/issues/21) are planned.
+The target design keeps local and server histories independent; it does not promise automatic
+synchronization. The shared product scope and flows live in
+[`harness-docs`](https://github.com/Mikode13/harness-docs).
+
 ## Install
 
-The CLI supports Node.js 22.13 and later LTS lines. Install the command globally and start the
-interactive session:
+The CLI supports Node.js 22.x (22.13 or later) or 24.x. Install the command globally and start the
+interactive session. Local execution follows the harness's macOS and Linux support; the planned
+remote client is how Windows will be supported without running the harness there.
 
 ```sh
 npm install --global @mikode13/harness-cli
