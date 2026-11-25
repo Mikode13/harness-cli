@@ -124,10 +124,14 @@ inspector visits still needs measurement.
 would support interactive web previews, which are outside the agreed MVP scope.
 
 **Consequences:** the terminal dependencies belong to the interactive client. Keep
-`single-turn` independent of renderer initialization. Runtime packaging is an implementation
-decision: verify the selected OpenTUI version against the CLI's published Node.js support and
-the native Windows remote-client target before shipping. This framework decision does not
-select a new runtime for CLI users.
+`single-turn` independent of renderer initialization. Ship the first TUI on macOS and
+Linux. Evaluate native Windows remote-client support separately in
+[#18](https://github.com/Mikode13/harness-cli/issues/18). Windows compatibility does not
+gate the initial TUI release.
+
+The Node.js version for the TUI remains open. When choosing the OpenTUI version and packaging,
+evaluate raising the CLI's minimum supported Node.js version alongside keeping the current
+range. Record the supported versions when that choice is made.
 
 See the [TUI implementation issue](https://github.com/Mikode13/harness-cli/issues/13),
 [Metis mockups](https://github.com/Mikode13/harness-cli/issues/23) and
