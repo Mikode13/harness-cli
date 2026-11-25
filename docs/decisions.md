@@ -110,7 +110,7 @@ dependency update in a new release of this package.
 
 ## Use OpenTUI and SolidJS for the MVP terminal interface
 
-**Decision:** build the Metis interactive TUI with OpenTUI and its SolidJS binding
+**Decision:** build the Uróboros interactive TUI with OpenTUI and its SolidJS binding
 (`@opentui/solid`). Chromium and embedded browser views are outside the MVP. Render chats,
 agent activity, approvals and diffs with terminal components. The image inspector can display
 an image in a capable terminal or offer to open it externally.
@@ -134,5 +134,5 @@ evaluate raising the CLI's minimum supported Node.js version alongside keeping t
 range. Record the supported versions when that choice is made.
 
 See the [TUI implementation issue](https://github.com/Mikode13/harness-cli/issues/13),
-[Metis mockups](https://github.com/Mikode13/harness-cli/issues/23) and
+[Uróboros mockups](https://github.com/Mikode13/harness-cli/issues/23) and
 [OpenTUI Solid documentation](https://opentui.com/docs/bindings/solid/).
