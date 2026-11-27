@@ -129,9 +129,10 @@ Linux. Evaluate native Windows remote-client support separately in
 [#18](https://github.com/Mikode13/harness-cli/issues/18). Windows compatibility does not
 gate the initial TUI release.
 
-The Node.js version for the TUI remains open. When choosing the OpenTUI version and packaging,
-evaluate raising the CLI's minimum supported Node.js version alongside keeping the current
-range. Record the supported versions when that choice is made.
+Use Node.js 26.x starting at 26.4.0 for development and the terminal UI. The launcher compiles
+Solid TSX and enables native FFI for OpenTUI. The readline and single-turn commands also
+support Node 22.13+ in the 22.x line and Node 24.x. See the
+[implementation and runtime decision](https://github.com/Mikode13/harness-cli/pull/25).
 
 See the [TUI implementation issue](https://github.com/Mikode13/harness-cli/issues/13),
 [Uróboros mockups](https://github.com/Mikode13/harness-cli/issues/23) and
