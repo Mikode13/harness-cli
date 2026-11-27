@@ -88,6 +88,19 @@ rules on top. The orchestrator's models are not configurable from the command li
 the whole workflow on one provider needs a new option, which can be added without changing the
 existing ones.
 
+## Use Node.js 26.4 for the Uróboros terminal UI
+
+Use Node.js 26.x starting at 26.4.0 for development and the terminal UI preview.
+OpenTUI 0.9.9 uses Node’s experimental FFI to call its native renderer. The launch and
+smoke-test commands compile Solid TSX to ESM and supply the runtime flags. This lets
+contributors build and run the TUI with the same Node and pnpm toolchain as the CLI.
+
+The readline and single-turn commands also support Node 22.13+ in the 22.x line and Node
+24.x. The published CLI consumes harness 1.0.0 and the TUI consumes 13.3.0. Both harness
+packages declare Node 22 and 24. The CLI integration suite exercises that dependency on Node 26 with offline SDK
+fixtures. See [OpenTUI runtime support](https://opentui.com/docs/getting-started/runtime-support/)
+and [Solid compilation](https://opentui.com/docs/bindings/solid/).
+
 ## Publish the CLI to npm as `harness-cli`
 
 **Decision:** publish `@mikode13/harness-cli` to npm through the MiKode automated release
