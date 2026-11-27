@@ -111,8 +111,15 @@ stdout; cancellation or failure returns through `dispatch` without contaminating
 The private `tui/` workspace compiles Solid TSX into ESM with Babel and Rolldown.
 Node.js 26.4+ in the 26.x line runs OpenTUI with native FFI enabled. The TUI scripts select
 Solid’s reactive client implementation with `--conditions=browser`. The published
-Node executable and its tarball use the existing entry point. Both interactive clients use
-`src/buildAgent.ts` to select and validate agents. The TUI's `localRunner.ts` adapts the
-installed harness contract into prompt submission, progress text, cancellation and a final
-reply. The view owns in-memory chats and drafts. Each chat has a separate agent and all
-chats share the current checkout. Progress belongs to its originating run.
+Node executable and its tarball use the existing entry point.
+The TUI workspace pins harness 13.3.0 separately from the published CLI's 1.0.0
+dependency. `tui/localRunner.ts` builds each chat's SDK or model API agent through the
+public factories and passes a stable session ID and run options. The model API agents
+use the checkout as their workspace. The direct agent accepts an inbox for follow-up input.
+The store groups the ordered run record by prompt and tracks live activity by delegation
+path. Parallel questions and approvals share a cancellable input queue for the owning run.
+
+Workspace restore uses the core's public history. The preview follows both sides of a
+branched history, shows each affected run and captures the current head. Confirmation passes
+that head to `goTo` so a later workspace change invalidates the preview. Conversation text
+stays visible after a move. Chats and model context are process-local in this preview.

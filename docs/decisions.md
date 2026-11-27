@@ -96,8 +96,8 @@ smoke-test commands compile Solid TSX to ESM and supply the runtime flags. This 
 contributors build and run the TUI with the same Node and pnpm toolchain as the CLI.
 
 The readline and single-turn commands also support Node 22.13+ in the 22.x line and Node
-24.x. The CLI still consumes harness 1.0.0, whose published engine range covers Node 22
-and 24. The CLI integration suite exercises that dependency on Node 26 with offline SDK
+24.x. The published CLI consumes harness 1.0.0 and the TUI consumes 13.3.0. Both harness
+packages declare Node 22 and 24. The CLI integration suite exercises that dependency on Node 26 with offline SDK
 fixtures. See [OpenTUI runtime support](https://opentui.com/docs/getting-started/runtime-support/)
 and [Solid compilation](https://opentui.com/docs/bindings/solid/).
 

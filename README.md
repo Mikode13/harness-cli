@@ -167,11 +167,26 @@ pnpm tui
 pnpm tui --agent codex
 ```
 
-The preview uses the same credentials, agent flags and working directory as the interactive CLI.
-Use Ctrl+N to open another local chat, F2 to switch chats and F3 or a click to jump to a
-prompt. Each chat keeps its own agent, draft and transcript until you exit. Chats share the
-current checkout, so one run can write to it at a time. Ctrl+C cancels the active run or
-exits when idle. Cloud chats, per-delegate activity and restoration are future work.
+The preview uses `@mikode13/harness@13.3.0`. The default runs its Agent SDK orchestrator
+with the existing SDK credentials. Use `--llm` to run the phased orchestrator with the model
+APIs and their API keys, billed by the providers. To run one model API agent in the current
+checkout, use `pnpm tui --llm --agent openai` or `pnpm tui --llm --agent anthropic`.
+Both modes accept the earlier provider spellings `codex` and `claude`.
+
+- Ctrl+N opens a local chat. F2 switches chats and preserves their drafts. Each chat has its
+  own agent and session ID. All chats share one checkout and one active run at a time.
+- F3 or a click jumps to a prompt. F4 opens its ordered run record, including tool diffs,
+  decisions, delegate origins and final results. During a run, the activity panel tracks each
+  delegated worker separately.
+- Answer model API questions in the response panel. Click a choice or type an answer. Tool
+  approvals require an explicit **Approve** or **Deny**. With a direct model API agent, F6
+  sends the current draft during a run. Unread messages return to the draft when the run ends.
+- F5 previews the workspace changes between the current history head and the selected prompt's
+  before/after target. Enter confirms when idle. Select how to handle recorded commits. Reset
+  is offered only when the recorded upstreams establish that the affected commits are unpublished.
+  The result lists files or branches the core left alone. SDK edits have no harness history target.
+- Ctrl+C cancels the active run or exits when idle. Chats and their run records live in memory
+  for this preview. The model API file history is stored on disk by the harness.
 
 ## Development
 

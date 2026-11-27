@@ -7,10 +7,14 @@ it('forwards local progress and returns the final reply through the installed ha
 	codexSdk.respond('Here are the changes.', { reasoning: 'Inspecting the diff' });
 	const run = localRunner(['--agent', 'codex']);
 	const updates: string[] = [];
-	const reply = await run('Review this diff', new AbortController().signal, text => {
-		updates.push(text);
+	const reply = await run('Review this diff', {
+		signal: new AbortController().signal,
+		onRecord(entry) {
+			if (entry.type === 'progress' && entry.event.type === 'reasoning')
+				updates.push(entry.event.message);
+		},
 	});
-	expect(reply).toBe('Here are the changes.');
+	expect(reply.response).toBe('Here are the changes.');
 	expect(updates).toContain('Inspecting the diff');
 	expect(codexSdk.prompts).toEqual(['Review this diff']);
 });
