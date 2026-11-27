@@ -108,7 +108,9 @@ stdout; cancellation or failure returns through `dispatch` without contaminating
 
 ## Terminal UI preview
 
-The private `tui/` workspace runs OpenTUI and SolidJS from source with Bun. The published
+The private `tui/` workspace compiles Solid TSX into ESM with Babel and Rolldown.
+Node.js 26.4+ in the 26.x line runs OpenTUI with native FFI enabled. The TUI scripts select
+Solid’s reactive client implementation with `--conditions=browser`. The published
 Node executable and its tarball use the existing entry point. Both interactive clients use
 `src/buildAgent.ts` to select and validate agents. The TUI's `localRunner.ts` adapts the
 installed harness contract into prompt submission, progress text, cancellation and a final

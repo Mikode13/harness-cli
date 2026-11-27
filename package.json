@@ -15,7 +15,7 @@
 		"dist"
 	],
 	"engines": {
-		"node": "^22.13.0 || ^24.0.0"
+		"node": "^22.13.0 || ^24.0.0 || ^26.4.0"
 	},
 	"packageManager": "pnpm@11.17.0",
 	"publishConfig": {
@@ -38,8 +38,9 @@
 		"test:coverage": "vitest run --project unit --project integration --coverage",
 		"pack:check": "pnpm run build && node scripts/pack-check.mjs",
 		"check": "pnpm run format:check && pnpm run lint && pnpm run typecheck",
-		"tui": "bun --preload ./tui/preload.ts ./tui/main.tsx",
-		"test:tui": "bun --preload ./tui/preload.ts ./tui/smoke.tsx"
+		"tui": "pnpm run build:tui && node --experimental-ffi --conditions=browser tui/dist/main.js",
+		"test:tui": "pnpm run build:tui && node --experimental-ffi --conditions=browser tui/dist/smoke.js",
+		"build:tui": "pnpm --dir tui run build"
 	},
 	"dependencies": {
 		"@mikode13/harness": "1.0.0"

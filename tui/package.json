@@ -6,5 +6,17 @@
 		"@opentui/core": "0.9.9",
 		"@opentui/solid": "0.9.9",
 		"solid-js": "1.9.16"
+	},
+	"engines": {
+		"node": "^26.4.0"
+	},
+	"scripts": {
+		"build": "rolldown -c"
+	},
+	"devDependencies": {
+		"@babel/core": "7.29.7",
+		"@babel/preset-typescript": "7.27.1",
+		"babel-preset-solid": "1.9.16",
+		"rolldown": "1.2.7"
 	}
 }
