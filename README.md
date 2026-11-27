@@ -206,3 +206,20 @@ This project is source-available under the MIT License with the
 [Commons Clause License Condition v1.0](https://commonsclause.com/). See
 [`LICENSE`](./LICENSE) for the complete text. It is not OSI open source: the Commons Clause
 restricts selling the software or a service whose value derives substantially from it.
+
+### Uróboros terminal UI preview
+
+From a checkout on Linux or macOS, install Bun and run:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm tui
+# To use a specific provider:
+pnpm tui --agent codex
+```
+
+The preview uses the same credentials, agent flags and working directory as the interactive CLI.
+Use Ctrl+N to open another local chat, F2 to switch chats and F3 or a click to jump to a
+prompt. Each chat keeps its own agent, draft and transcript until you exit. Chats share the
+current checkout, so one run can write to it at a time. Ctrl+C cancels the active run or
+exits when idle. Cloud chats, per-delegate activity and restoration are future work.

@@ -1,0 +1,10 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"jsx": "preserve",
+		"jsxImportSource": "@opentui/solid",
+		"noUncheckedSideEffectImports": false,
+		"lib": ["ES2024", "DOM"]
+	},
+	"include": ["*.ts", "*.tsx"]
+}

@@ -1,36 +1,13 @@
-import { createAgent, createOrchestrator } from '@mikode13/harness';
-import type { Agent, ProgressEvent } from '@mikode13/harness';
+import { buildAgent } from './buildAgent.ts';
+import type { ProgressEvent } from '@mikode13/harness';
 import { Output } from './adapters/output.ts';
 import { PromptEmitter } from './adapters/promptEmitter.ts';
 import { ConversationLoop } from './conversationLoop.ts';
 import type { IOutput } from './output.ts';
 import { Spinner } from './spinner.ts';
 import { formatProgressEvent } from './progressEventFormatter.ts';
-import { parseHarnessArgs } from './agentOptions.ts';
-import { CliUsageError } from './errors.ts';
 
 const exitConfirmationWindowMs = 3000;
-
-/** `--agent` talks to one agent directly; without it the session runs the orchestrator. */
-function buildAgent(args: readonly string[]): Agent {
-	const { provider, model, reasoningEffort, autoApprove, promptFile } = parseHarnessArgs(args, {
-		allowPositionals: false,
-	}).options;
-
-	if (promptFile !== undefined) {
-		throw new CliUsageError('--prompt-file is only available with single-turn');
-	}
-
-	if (!provider) {
-		// The orchestrator picks its own models, so ignoring these would misreport what runs.
-		if (model !== undefined || reasoningEffort !== undefined) {
-			throw new CliUsageError('--model and --reasoning-effort require --agent');
-		}
-		return createOrchestrator({ autoApprove });
-	}
-
-	return createAgent(provider, { model, reasoningEffort, autoApprove });
-}
 
 export class Repl {
 	private readonly loop: ConversationLoop;

@@ -30,14 +30,16 @@
 		"format:check": "prettier . --check",
 		"lint": "eslint . --max-warnings 0",
 		"lint:fix": "eslint . --fix",
-		"typecheck": "tsc --noEmit && tsc --noEmit -p tests",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p tests && tsc --noEmit -p tui",
 		"test": "pnpm run test:unit && pnpm run test:integration",
 		"test:unit": "vitest run --project unit",
 		"test:unit:watch": "vitest --project unit",
 		"test:integration": "vitest run --project integration",
 		"test:coverage": "vitest run --project unit --project integration --coverage",
 		"pack:check": "pnpm run build && node scripts/pack-check.mjs",
-		"check": "pnpm run format:check && pnpm run lint && pnpm run typecheck"
+		"check": "pnpm run format:check && pnpm run lint && pnpm run typecheck",
+		"tui": "bun --preload ./tui/preload.ts ./tui/main.tsx",
+		"test:tui": "bun --preload ./tui/preload.ts ./tui/smoke.tsx"
 	},
 	"dependencies": {
 		"@mikode13/harness": "1.0.0"

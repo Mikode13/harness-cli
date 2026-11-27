@@ -105,3 +105,12 @@ stdout; cancellation or failure returns through `dispatch` without contaminating
   behavior.
 - Provider capabilities and configuration are limited by the released harness dependency. This
   project cannot add or repair them locally without breaking the ownership boundary.
+
+## Terminal UI preview
+
+The private `tui/` workspace runs OpenTUI and SolidJS from source with Bun. The published
+Node executable and its tarball use the existing entry point. Both interactive clients use
+`src/buildAgent.ts` to select and validate agents. The TUI's `localRunner.ts` adapts the
+installed harness contract into prompt submission, progress text, cancellation and a final
+reply. The view owns in-memory chats and drafts. Each chat has a separate agent and all
+chats share the current checkout. Progress belongs to its originating run.
