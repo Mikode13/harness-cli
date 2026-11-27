@@ -107,3 +107,33 @@ Semantic Versioning, so changing or removing one requires a major release. npm a
 hold the version, and `package.json` stays at `0.0.0-development`. A fix in the harness, such as
 the one for cancellation during a Claude review (Mikode13/harness#21), reaches users through a
 dependency update in a new release of this package.
+
+## Use OpenTUI and SolidJS for the MVP terminal interface
+
+**Decision:** build the Uróboros interactive TUI with OpenTUI and its SolidJS binding
+(`@opentui/solid`). Chromium and embedded browser views are outside the MVP. Render chats,
+agent activity, approvals and diffs with terminal components. The image inspector can display
+an image in a capable terminal or offer to open it externally.
+
+**Context:** the main interaction is reading a conversation while individual session states
+and delegate rows update. Solid signals fit that update pattern. The MVP needs to inspect
+agent output without starting a browser engine. Memory use for long histories and repeated
+inspector visits still needs measurement.
+
+**Alternatives considered:** OpenTUI also offers React bindings. PixelGUI's Chromium WebView
+would support interactive web previews, which are outside the agreed MVP scope.
+
+**Consequences:** the terminal dependencies belong to the interactive client. Keep
+`single-turn` independent of renderer initialization. Ship the first TUI on macOS and
+Linux. Evaluate native Windows remote-client support separately in
+[#18](https://github.com/Mikode13/harness-cli/issues/18). Windows compatibility does not
+gate the initial TUI release.
+
+Use Node.js 26.x starting at 26.4.0 for development and the terminal UI. The launcher compiles
+Solid TSX and enables native FFI for OpenTUI. The readline and single-turn commands also
+support Node 22.13+ in the 22.x line and Node 24.x. See the
+[implementation and runtime decision](https://github.com/Mikode13/harness-cli/pull/25).
+
+See the [TUI implementation issue](https://github.com/Mikode13/harness-cli/issues/13),
+[Uróboros mockups](https://github.com/Mikode13/harness-cli/issues/23) and
+[OpenTUI Solid documentation](https://opentui.com/docs/bindings/solid/).
